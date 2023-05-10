@@ -24,7 +24,7 @@ export class AuthService {
         HttpStatus.UNAUTHORIZED,
       );
     }
-    const payload = { email, id: userExist._id };
+    const payload = { email, userId: userExist._id };
 
     return {
       access_token: this.jwtService.sign(payload),
@@ -40,6 +40,8 @@ export class AuthService {
     const passHash = await generateHash(password);
     registerAuthDto.password = passHash;
     this.userModel.create(registerAuthDto);
-    return 'User created';
+    return {
+      message: 'User created successfully',
+    };
   }
 }
