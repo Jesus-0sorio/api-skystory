@@ -6,16 +6,21 @@ import {
   Param,
   Patch,
   Post,
+  Req,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { fileFilter, renameImage } from './helpers/image.helper';
 import { PostService } from './post.service';
 
+@ApiTags('post')
+@ApiBearerAuth()
 @Controller('post')
 export class PostController {
   constructor(private readonly postService: PostService) {}
@@ -30,33 +35,49 @@ export class PostController {
       fileFilter: fileFilter,
     }),
   )
-  create(
+  async create(
+    @Req() req,
     @Body() createPostDto: CreatePostDto,
     @UploadedFile() file: Express.Multer.File,
+    @Res() res,
   ) {
-    return this.postService.create({
-      fileName: file.filename,
-      ...createPostDto,
-    });
+    return res.status(201).json(
+      this.postService.create({
+        create_by: req['user'].userId,
+        fileName: file.filename,
+        ...createPostDto,
+      }),
+    );
   }
 
   @Get()
-  findAll() {
-    return this.postService.findAll();
+  async findAll(@Res() res) {
+    return res.status(200).json(await this.postService.findAll());
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return await this.postService.findOne(id);
+  async findOne(@Param('id') id: string, @Res() res) {
+    return res.status(200).json(await this.postService.findOne(id));
+  }
+
+  @Get('user/:id')
+  async findUserPost(@Param('id') id: string, @Res() res) {
+    return res.status(200).json(await this.postService.findUserPost(id));
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postService.update(id, updatePostDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updatePostDto: UpdatePostDto,
+    @Res() res,
+  ) {
+    return res
+      .status(200)
+      .json(await this.postService.update(id, updatePostDto));
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postService.remove(id);
+  async remove(@Param('id') id: string, @Res() res) {
+    return res.status(204).json(await this.postService.remove(id));
   }
 }

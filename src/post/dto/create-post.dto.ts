@@ -6,6 +6,5 @@ export class CreatePostDto {
   description: string;
   fileName: string;
   @IsEmpty()
-  @IsNumber()
-  create_by: number;
+  create_by: string;
 }

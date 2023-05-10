@@ -1,44 +1,87 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { v4 as uuid } from 'uuid';
+import { User } from '../users/model/user.schema';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './schema/post.schema';
 
 @Injectable()
 export class PostService {
-  constructor(@InjectModel('Post') private readonly postModel: Model<Post>) {}
+  constructor(
+    @InjectModel('Post') private readonly postModel: Model<Post>,
+    @InjectModel('User') private readonly userModel: Model<User>,
+  ) {}
 
   async create(createPostDto: CreatePostDto) {
-    this.postModel.create({ id: uuid(), ...createPostDto });
-    console.log(createPostDto);
-    return 'This action adds a new post';
+    try {
+      const { _id } = await this.postModel.create(createPostDto);
+      const user = await this.userModel.findOne({
+        _id: createPostDto.create_by,
+      });
+      user.posts.push(_id);
+      await user.save();
+      return 'Post created successfully';
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  findAll() {
-    return this.postModel.find({}, { id: 0, __v: 0, _id: 0 });
+  async findAll() {
+    try {
+      return this.postModel
+        .find({})
+        .populate('create_by', {
+          description: 1,
+          fileName: 1,
+          create_by: 1,
+        })
+        .exec();
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  async findOne(id: string) {
-    const { description, fileName, create_by } = await this.postModel.findOne(
-      {
-        id,
-      },
-      { id: 0, __v: 0, _id: 0 },
-    );
-    return {
-      fileURL: `${process.env.APP_URL}/uploads/${fileName}`,
-      description,
-      create_by,
-    };
+  async findOne(_id: string) {
+    try {
+      const { description, fileName, create_by } = await this.postModel.findOne(
+        {
+          _id,
+        },
+      );
+      return {
+        fileURL: `${process.env.APP_URL}/uploads/${fileName}`,
+        description,
+        create_by,
+      };
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  update(id: string, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
+  async findUserPost(_id: string) {
+    try {
+      return this.postModel.find({ create_by: _id }).exec();
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} post`;
+  async update(_id: string, updatePostDto: UpdatePostDto) {
+    try {
+      this.postModel.updateOne({ _id }, updatePostDto).exec();
+      return 'Post updated successfully';
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async remove(_id: string) {
+    try {
+      this.postModel.deleteOne({ _id }).exec();
+      return 'Post deleted successfully';
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }
