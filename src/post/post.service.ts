@@ -17,7 +17,7 @@ export class PostService {
   }
 
   findAll() {
-    return `This action returns all post`;
+    return this.postModel.find({}, { id: 0, __v: 0, _id: 0 });
   }
 
   async findOne(id: string) {
