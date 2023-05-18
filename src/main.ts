@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { RedirectMiddleware } from './middleware/Redirect.middlewaret';
+import { RedirectMiddleware } from './middleware/Redirect.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
