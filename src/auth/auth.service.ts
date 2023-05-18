@@ -16,7 +16,9 @@ export class AuthService {
 
   async login(loginAuthDto: LoginAuthDto) {
     const { email, password } = loginAuthDto;
-    const userExist = await this.userModel.findOne({ email });
+    const userExist = await this.userModel
+      .findOne({ email })
+      .select('+password');
     const isCheck = await compareHash(password, userExist.password);
     if (!userExist || !isCheck) {
       throw new HttpException(
@@ -27,6 +29,7 @@ export class AuthService {
     const payload = { email, userId: userExist._id };
 
     return {
+      user: { email, userID: userExist._id, name: userExist.name },
       access_token: this.jwtService.sign(payload),
     };
   }
@@ -40,8 +43,9 @@ export class AuthService {
     const passHash = await generateHash(password);
     registerAuthDto.password = passHash;
     this.userModel.create(registerAuthDto);
+
     return {
-      message: 'User created successfully',
+      message: 'User created',
     };
   }
 }
