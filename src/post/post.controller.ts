@@ -81,10 +81,14 @@ export class PostController {
     @Param('id') id: string,
     @Body() updatePostDto: UpdatePostDto,
     @Res() res,
+    @Req() req,
   ) {
-    return res
-      .status(200)
-      .json(await this.postService.update(id, updatePostDto));
+    return res.status(200).json(
+      await this.postService.update(id, {
+        ...updatePostDto,
+        userID: req['user'].userId,
+      }),
+    );
   }
 
   @Delete(':id')

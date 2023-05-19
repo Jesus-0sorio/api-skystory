@@ -19,8 +19,15 @@ export class AuthService {
     const userExist = await this.userModel
       .findOne({ email })
       .select('+password');
+    if (!userExist) {
+      throw new HttpException(
+        'Email or password is incorrect',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
     const isCheck = await compareHash(password, userExist.password);
-    if (!userExist || !isCheck) {
+
+    if (!isCheck) {
       throw new HttpException(
         'Email or password is incorrect',
         HttpStatus.UNAUTHORIZED,

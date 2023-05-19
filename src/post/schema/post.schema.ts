@@ -14,6 +14,9 @@ export class Post {
   @Prop({ required: true })
   fileUrl: string;
 
+  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'User' }] })
+  likes = [];
+
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
   create_by: string;
 }

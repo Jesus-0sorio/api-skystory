@@ -22,6 +22,9 @@ export class User {
 
   @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'Post' }] })
   posts = [];
+
+  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'Post', unique: true }] })
+  likedPosts = [];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

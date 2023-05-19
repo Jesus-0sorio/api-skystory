@@ -62,7 +62,38 @@ export class PostService {
 
   async update(_id: string, updatePostDto: UpdatePostDto) {
     try {
-      this.postModel.updateOne({ _id }, updatePostDto).exec();
+      if (updatePostDto.like != undefined) {
+        const post = await this.postModel.findOne({ _id });
+        if (!post) {
+          throw new HttpException('Post not found', HttpStatus.NOT_FOUND);
+        }
+
+        const user = await this.userModel.findOne({
+          _id: updatePostDto.userID,
+        });
+
+        if (!user) {
+          throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        }
+        if (post.likes.includes(updatePostDto.userID)) {
+          post.likes = post.likes.filter((id) => id != updatePostDto.userID);
+          user.likedPosts = user.likedPosts.filter(
+            (id) => id != updatePostDto.userID,
+          );
+          await user.save();
+          await post.save();
+          return 'Post updated successfully';
+        }
+
+        post.likes.push(updatePostDto.userID);
+
+        user.likedPosts.push(_id);
+
+        await post.save();
+        await user.save();
+        return 'Post updated successfully';
+      }
+      await this.postModel.updateOne({ _id }, updatePostDto).exec();
       return 'Post updated successfully';
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
