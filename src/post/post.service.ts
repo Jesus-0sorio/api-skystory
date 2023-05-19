@@ -29,14 +29,7 @@ export class PostService {
 
   async findAll() {
     try {
-      return this.postModel
-        .find({})
-        .populate('create_by', {
-          description: 1,
-          fileName: 1,
-          create_by: 1,
-        })
-        .exec();
+      return await this.postModel.find({}).populate('create_by').exec();
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -50,7 +43,7 @@ export class PostService {
         },
       );
       return {
-        fileURL: `${process.env.APP_URL}/uploads/${fileName}`,
+        fileURL: `${process.env.APP_URL}/api/uploads/${fileName}`,
         description,
         create_by,
       };

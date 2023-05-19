@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -29,7 +30,16 @@ export class PostController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './storage',
+        destination: (req, file, cb) => {
+          const userId = req['user']['userId'];
+          const userFolder = `./storage/${userId}`;
+
+          if (!existsSync(userFolder)) {
+            mkdirSync(userFolder);
+          }
+
+          cb(null, userFolder);
+        },
         filename: renameImage,
       }),
       fileFilter: fileFilter,
@@ -45,6 +55,7 @@ export class PostController {
       this.postService.create({
         create_by: req['user'].userId,
         fileName: file.filename,
+        fileUrl: `/uploads/${req['user'].userId}%2F${file.filename}`,
         ...createPostDto,
       }),
     );

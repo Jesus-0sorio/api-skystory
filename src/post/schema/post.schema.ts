@@ -11,6 +11,9 @@ export class Post {
   @Prop({ required: true })
   fileName: string;
 
+  @Prop({ required: true })
+  fileUrl: string;
+
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
   create_by: string;
 }
