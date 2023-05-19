@@ -34,6 +34,10 @@ export class PostController {
           const userId = req['user']['userId'];
           const userFolder = `./storage/${userId}`;
 
+          if (!existsSync('./storage')) {
+            mkdirSync('./storage');
+          }
+
           if (!existsSync(userFolder)) {
             mkdirSync(userFolder);
           }
