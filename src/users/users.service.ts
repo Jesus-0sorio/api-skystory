@@ -7,9 +7,9 @@ import { User } from './model/user.schema';
 @Injectable()
 export class UsersService {
   constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
-  findOne(_id: string) {
+  async findOne(_id: string) {
     try {
-      const userExist = this.userModel.findOne({ _id }).exec();
+      const userExist = await this.userModel.findOne({ _id }).exec();
       if (!userExist) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }

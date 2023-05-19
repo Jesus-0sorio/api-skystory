@@ -7,12 +7,19 @@ export type UserDocument = User & Document;
 export class User {
   @Prop({ unique: true })
   email: string;
+
   @Prop({ required: true, unique: true })
   username: string;
+
   @Prop({ required: true })
   name: string;
+
+  @Prop()
+  fileUrl: string;
+
   @Prop({ required: true, select: false })
   password: string;
+
   @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'Post' }] })
   posts = [];
 }
